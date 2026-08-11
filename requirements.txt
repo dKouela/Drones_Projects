@@ -1,0 +1,23 @@
+# Verified working on Python 3.12 / Windows, flying ArduCopter 4.7.0.
+#
+# DroneKit 2.9.2 is the last release (2020) and does not support Python 3.10+
+# out of the box. Two things make it work here:
+#   * `future` supplies the `past.builtins` module DroneKit imports.
+#   * drone/compat.py restores the collections ABC aliases removed in 3.10.
+dronekit==2.9.2
+pymavlink==2.4.49
+future==1.0.0
+
+# Only needed for `--firmware legacy` (ArduCopter 3.3). The default 'stable'
+# backend downloads current ArduCopter straight from ArduPilot's firmware
+# server and does not use this package.
+dronekit-sitl==3.3.0
+
+# Onboard perception (the `follow` mission). OpenCV supplies both capture and
+# the DNN runtime -- the YuNet detector runs through cv2.dnn, so no PyTorch or
+# onnxruntime is pulled in. The 227 KB model is downloaded on first use.
+opencv-python==5.0.0.93
+
+# Optional but very useful: MAVProxy gives you a ground-station console and can
+# fan the SITL link out to several clients at once (see README).
+MAVProxy==1.8.74

@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Claude Code machine-local permission allowlists (absolute paths, session ids)
+.claude/
+
+# SITL scratch files (eeprom, logs, downloaded parameter files) if a simulator
+# is ever run from this directory
+*.parm
+*.BIN
+eeprom.bin
+logs/
+terrain/
+sitl.log
+
+# Recorded flights. flights/square.json is committed as sample data for the
+# viewer; everything else here is throwaway output.
+flights/*.json
+!flights/square.json
