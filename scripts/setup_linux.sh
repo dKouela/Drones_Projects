@@ -21,7 +21,7 @@ set -euo pipefail
 
 # --- config -----------------------------------------------------------------
 ARDUPILOT_DIR="${ARDUPILOT_DIR:-$HOME/ardupilot}"
-ARDUPILOT_BRANCH="${ARDUPILOT_BRANCH:-Plane-4.6}"   # QuadPlane lives in ArduPlane
+ARDUPILOT_BRANCH="${ARDUPILOT_BRANCH:-Plane-4.5}"   # QuadPlane lives in ArduPlane; newest stable Plane branch
 GZ_PLUGIN_DIR="${GZ_PLUGIN_DIR:-$HOME/ardupilot_gazebo}"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WANT_GAZEBO=1
