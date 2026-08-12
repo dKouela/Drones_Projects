@@ -74,10 +74,17 @@ if [[ "${SKIP_ARDUPILOT:-0}" != "1" ]]; then
   say "Installing ArduPilot's prerequisites (this pulls MAVProxy, empy, etc.)"
   # ArduPilot ships its own dependency installer; USER can be unset in WSL.
   USER="${USER:-$(whoami)}" Tools/environment_install/install-prereqs-ubuntu.sh -y || \
-    warn "install-prereqs returned nonzero; often fine if deps already present."
+    warn "install-prereqs returned nonzero; the python-argparse 'Unable to locate' line is expected on modern Ubuntu and harmless."
 
   # shellcheck disable=SC1090
   source "$HOME/.profile" || true
+
+  # The repo venv is active, so ArduPilot's waf build uses THIS python -- but
+  # install-prereqs put its build deps in the system python. Install ArduPilot's
+  # own build-time Python requirements into the active venv so waf finds them.
+  say "Installing ArduPilot build-time Python deps into the repo venv"
+  pip install "empy==3.3.4" pexpect ptyprocess "future" "pymavlink" || \
+    warn "pip install of ArduPilot build deps returned nonzero"
 
   say "Building ArduPlane SITL (the QuadPlane vehicle)"
   ./waf configure --board sitl
