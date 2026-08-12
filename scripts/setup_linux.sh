@@ -38,6 +38,23 @@ fi
 ARCH="$(uname -m)"
 say "Host arch: $ARCH   (x86_64 = WSL2/Windows, aarch64/arm64 = Mac VM)"
 
+# --- 0. Python version guard ------------------------------------------------
+# The whole toolchain (ArduPilot's DroneCAN generator, Gazebo's python3-gz-*
+# packages) requires Python < 3.13. Ubuntu 24.04 LTS ships 3.12 and is the
+# supported target. A dev-release Ubuntu (e.g. 25.10 "resolute", Python 3.14)
+# breaks the ArduPilot build AND makes gz-harmonic uninstallable.
+CODENAME="$(lsb_release -cs 2>/dev/null || echo unknown)"
+PYMINOR="$(python3 -c 'import sys; print(sys.version_info.minor)' 2>/dev/null || echo 0)"
+say "Ubuntu: $CODENAME   system python3: 3.$PYMINOR"
+if [[ "$PYMINOR" -ge 13 ]]; then
+  warn "System Python is 3.$PYMINOR (>= 3.13). Gazebo's packages require < 3.13"
+  warn "and ArduPilot's build breaks on 3.14. This is Ubuntu $CODENAME (not 24.04 LTS)."
+  warn "STRONGLY recommended: reinstall the VM on Ubuntu 24.04 LTS (Python 3.12)."
+  warn "To force past this anyway (ArduPilot only, no Gazebo), install python3.12"
+  warn "via deadsnakes and set PYTHON=python3.12 before running this script."
+fi
+PYTHON="${PYTHON:-python3}"
+
 # --- 1. base tooling --------------------------------------------------------
 say "Installing base build tools + Python"
 sudo apt-get update -y
@@ -50,7 +67,7 @@ sudo apt-get install -y \
 # --- 2. this repo's Python venv ---------------------------------------------
 say "Creating this repo's Python venv at $REPO_DIR/.venv"
 if [[ ! -d "$REPO_DIR/.venv" ]]; then
-  python3 -m venv "$REPO_DIR/.venv"
+  "$PYTHON" -m venv "$REPO_DIR/.venv"
 fi
 # shellcheck disable=SC1091
 source "$REPO_DIR/.venv/bin/activate"
@@ -102,7 +119,15 @@ if [[ "$WANT_GAZEBO" == "1" ]]; then
   sudo apt-get install -y curl lsb-release gnupg
   sudo curl -sSL https://packages.osrfoundation.org/gazebo.gpg \
     -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" \
+  # Use the release codename, but fall back to 'noble' (24.04 LTS) when running
+  # on a dev release the OSRF repo does not build for (e.g. 25.10 "resolute").
+  GZ_CODENAME="$(lsb_release -cs)"
+  case "$GZ_CODENAME" in
+    noble|jammy|focal) : ;;                 # LTS releases OSRF builds for
+    *) warn "OSRF has no Gazebo packages for '$GZ_CODENAME'; using 'noble' repo."
+       GZ_CODENAME="noble" ;;
+  esac
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $GZ_CODENAME main" \
     | sudo tee /etc/apt/sources.list.d/gazebo-stable.list >/dev/null
   sudo apt-get update -y
   sudo apt-get install -y gz-harmonic
