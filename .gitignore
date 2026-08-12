@@ -3,6 +3,13 @@
 __pycache__/
 *.py[cod]
 
+# Simulation / dev environment, built locally by scripts/setup_linux.sh.
+# ArduPilot and the Gazebo plugin clone to ~/ardupilot and ~/ardupilot_gazebo
+# by default; these entries also cover building them inside the repo tree.
+ardupilot/
+ardupilot_gazebo/
+build/
+
 # Claude Code machine-local permission allowlists (absolute paths, session ids)
 .claude/
 
