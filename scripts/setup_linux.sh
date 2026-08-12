@@ -83,7 +83,9 @@ if [[ "${SKIP_ARDUPILOT:-0}" != "1" ]]; then
   # install-prereqs put its build deps in the system python. Install ArduPilot's
   # own build-time Python requirements into the active venv so waf finds them.
   say "Installing ArduPilot build-time Python deps into the repo venv"
-  pip install "empy==3.3.4" pexpect ptyprocess "future" "pymavlink" || \
+  # setuptools provides pkg_resources; dronecan is needed by the DroneCAN
+  # DSDL generator; empy/pexpect/future/pymavlink by waf and the tools.
+  pip install setuptools "empy==3.3.4" pexpect ptyprocess future pymavlink dronecan || \
     warn "pip install of ArduPilot build deps returned nonzero"
 
   say "Building ArduPlane SITL (the QuadPlane vehicle)"
